@@ -1,3 +1,4 @@
+import 'package:attendence_app/extra.dart';
 import 'package:attendence_app/screens/auto_attendence_screen.dart';
 import 'package:attendence_app/screens/manual_attendence_screen.dart';
 import 'package:attendence_app/screens/portfolio_screen.dart';
@@ -82,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => ManualAttendancePage(),
+                      builder: (context) => ManualAttendanceScreenF(),
                     ),
                   );
                 },
@@ -99,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 leading: Icon(Icons.show_chart, color: Colors.orange),
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => PortfolioScreen()),
+                    MaterialPageRoute(builder: (context) => FilterScreen()),
                   );
                 },
               ),

@@ -1,176 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 
-void main() {
-  runApp(MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Student Attendance App',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => HomeScreen(),
-        '/attendance_percentage': (context) => AttendancePercentagePage(),
-      },
-    );
-  }
-}
 
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Student Attendance'),
-        backgroundColor: Colors.blue,
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/attendance_percentage');
-          },
-          child: Text('Go to Attendance Percentage'),
+class FilterScreen extends StatefulWidget { @override _FilterScreenState createState() => _FilterScreenState(); }
+
+class _FilterScreenState extends State<FilterScreen> { String selectedClass = 'All'; String selectedSubject = 'All';
+
+@override Widget build(BuildContext context) { return Scaffold( appBar: AppBar(title: Text('Filter Attendance')), body: Padding( padding: EdgeInsets.all(20), child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Text('Select Class', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), SizedBox(height: 10), DropdownButtonFormField<String>( value: selectedClass, onChanged: (value) { setState(() { selectedClass = value!; }); }, items: ['All', '9', '10'] .map((e) => DropdownMenuItem(value: e, child: Text('Class $e'))) .toList(), decoration: InputDecoration( border: OutlineInputBorder(), filled: true, fillColor: Colors.white, ), ), SizedBox(height: 20), Text('Select Subject', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), SizedBox(height: 10), DropdownButtonFormField<String>( value: selectedSubject, onChanged: (value) { setState(() { selectedSubject = value!; }); }, items: ['All', 'Math', 'Science'] .map((e) => DropdownMenuItem(value: e, child: Text(e))) .toList(), decoration: InputDecoration( border: OutlineInputBorder(), filled: true, fillColor: Colors.white, ), ), SizedBox(height: 30), Center( child: ElevatedButton( onPressed: () { Navigator.push( context, MaterialPageRoute( builder: (context) => AttendanceScreen(selectedClass: selectedClass, selectedSubject: selectedSubject), ), ); }, child: Text('View Attendance'), style: ElevatedButton.styleFrom( padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), textStyle: TextStyle(fontSize: 18), ), ), ), ], ), ), ); } }
+
+class AttendanceScreen extends StatelessWidget { final String selectedClass; final String selectedSubject;
+
+AttendanceScreen({required this.selectedClass, required this.selectedSubject});
+
+final List<Map<String, dynamic>> students = [ {'name': 'Rahim', 'attendance': 85, 'class': '10', 'subject': 'Math'}, {'name': 'Karim', 'attendance': 70, 'class': '10', 'subject': 'Science'}, {'name': 'Jamil', 'attendance': 90, 'class': '9', 'subject': 'Math'}, {'name': 'Sami', 'attendance': 60, 'class': '9', 'subject': 'Science'}, ];
+
+@override Widget build(BuildContext context) { List<Map<String, dynamic>> filteredStudents = students.where((student) { return (selectedClass == 'All' || student['class'] == selectedClass) && (selectedSubject == 'All' || student['subject'] == selectedSubject); }).toList();
+
+return Scaffold(
+  appBar: AppBar(title: Text('Student Attendance')),
+  body: ListView.builder(
+    padding: EdgeInsets.all(10),
+    itemCount: filteredStudents.length,
+    itemBuilder: (context, index) {
+      final student = filteredStudents[index];
+      return Card(
+        margin: EdgeInsets.symmetric(vertical: 10),
+        child: ListTile(
+          contentPadding: EdgeInsets.all(15),
+          leading: CircularAttendanceIndicator(attendance: student['attendance']),
+          title: Text(student['name'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          subtitle: Text('Class: ${student['class']} | Subject: ${student['subject']}\nAttendance: ${student['attendance']}%'),
         ),
-      ),
-    );
-  }
-}
+      );
+    },
+  ),
+);
 
-class AttendancePercentagePage extends StatefulWidget {
-  @override
-  _AttendancePercentagePageState createState() =>
-      _AttendancePercentagePageState();
-}
+} }
 
-class _AttendancePercentagePageState extends State<AttendancePercentagePage> {
-  String? selectedBatch;
-  String? selectedSubject;
-  List<String> batches = ['Batch A', 'Batch B', 'Batch C'];
-  List<String> subjects = ['Math', 'Science', 'History'];
+class CircularAttendanceIndicator extends StatelessWidget { final int attendance;
 
-  List<Student> students = [
-    Student(name: 'Alice', attendance: 85),
-    Student(name: 'Bob', attendance: 92),
-    Student(name: 'Charlie', attendance: 78),
-    Student(name: 'David', attendance: 90),
-    Student(name: 'Eve', attendance: 95),
-  ];
+CircularAttendanceIndicator({required this.attendance});
 
-  // Filtered list based on the selected batch and subject
-  List<Student> getFilteredStudents() {
-    return students; // In a real app, apply batch and subject filters here.
-  }
+@override Widget build(BuildContext context) { return SizedBox( width: 50, height: 50, child: Stack( fit: StackFit.expand, children: [ CircularProgressIndicator( value: attendance / 100, backgroundColor: Colors.grey.shade300, valueColor: AlwaysStoppedAnimation<Color>(_getColor(attendance)), strokeWidth: 6, ), Center( child: Text('$attendance%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), ), ], ), ); }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Attendance Percentage'),
-        backgroundColor: Colors.blue,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Filter by Batch
-            DropdownButton<String>(
-              hint: Text('Select Batch'),
-              value: selectedBatch,
-              onChanged: (newValue) {
-                setState(() {
-                  selectedBatch = newValue;
-                });
-              },
-              items: batches.map((batch) {
-                return DropdownMenuItem<String>(
-                  value: batch,
-                  child: Text(batch),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 10),
-
-            // Filter by Subject
-            DropdownButton<String>(
-              hint: Text('Select Subject'),
-              value: selectedSubject,
-              onChanged: (newValue) {
-                setState(() {
-                  selectedSubject = newValue;
-                });
-              },
-              items: subjects.map((subject) {
-                return DropdownMenuItem<String>(
-                  value: subject,
-                  child: Text(subject),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 20),
-
-            // Show the attendance percentage list
-            Expanded(
-              child: ListView.builder(
-                itemCount: getFilteredStudents().length,
-                itemBuilder: (context, index) {
-                  var student = getFilteredStudents()[index];
-                  return Card(
-                    elevation: 5,
-                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: ListTile(
-                      title: Text(student.name),
-                      trailing: Text('${student.attendance}%'),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Attendance Graph (BarChart)
-            SizedBox(height: 20),
-            Text('Attendance Percentage Graph'),
-            SizedBox(height: 10),
-            Container(
-              height: 200,
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: 100,
-                  barTouchData: BarTouchData(enabled: false),
-                  titlesData: FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  gridData: FlGridData(show: false),
-                  barGroups: getFilteredStudents().map((student) {
-                    return BarChartGroupData(
-                      x: getFilteredStudents().indexOf(student),
-                      barRods: [
-                        BarChartRodData(
-                          y: student.attendance.toDouble(),  // Attendance as Y-axis value
-                          colors: [Colors.blue],  // Bar color
-                          width: 22,  // Bar width
-                          borderRadius: BorderRadius.zero,  // Border radius for bars
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Student class to hold student data
-class Student {
-  String name;
-  double attendance;
-
-  Student({required this.name, required this.attendance});
-}
+Color _getColor(int attendance) { if (attendance >= 80) { return Colors.green; } else if (attendance >= 60) { return Colors.orange; } else { return Colors.red; } } }
